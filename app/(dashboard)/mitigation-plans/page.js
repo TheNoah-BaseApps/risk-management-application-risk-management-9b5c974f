@@ -46,6 +46,9 @@ export default function MitigationPlansPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterEffectiveness, setFilterEffectiveness] = useState('');
   
+  // Helper function to normalize Select values
+  const normalizeSelectValue = (value) => value === "" || value === null ? undefined : value;
+  
   // Form state
   const [formData, setFormData] = useState({
     mitigation_plan_id: '',
@@ -53,8 +56,8 @@ export default function MitigationPlansPage() {
     mitigation_action: '',
     action_owner: '',
     implementation_date: '',
-    review_frequency: '',
-    effectiveness: '',
+    review_frequency: undefined,
+    effectiveness: undefined,
     monitoring_plan: '',
   });
 
@@ -95,10 +98,17 @@ export default function MitigationPlansPage() {
       
       const method = selectedPlan ? 'PUT' : 'POST';
       
+      // Convert undefined back to empty string for backend compatibility
+      const submitData = {
+        ...formData,
+        review_frequency: formData.review_frequency || '',
+        effectiveness: formData.effectiveness || '',
+      };
+      
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submitData),
       });
 
       const data = await response.json();
@@ -154,8 +164,8 @@ export default function MitigationPlansPage() {
       mitigation_action: '',
       action_owner: '',
       implementation_date: '',
-      review_frequency: '',
-      effectiveness: '',
+      review_frequency: undefined,
+      effectiveness: undefined,
       monitoring_plan: '',
     });
     setSelectedPlan(null);
@@ -169,8 +179,8 @@ export default function MitigationPlansPage() {
       mitigation_action: plan.mitigation_action,
       action_owner: plan.action_owner,
       implementation_date: plan.implementation_date?.split('T')[0] || '',
-      review_frequency: plan.review_frequency,
-      effectiveness: plan.effectiveness,
+      review_frequency: normalizeSelectValue(plan.review_frequency),
+      effectiveness: normalizeSelectValue(plan.effectiveness),
       monitoring_plan: plan.monitoring_plan,
     });
     setShowEditDialog(true);
@@ -293,7 +303,7 @@ export default function MitigationPlansPage() {
                   <SelectValue placeholder="All" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All</SelectItem>
+                  <SelectItem value="all">All</SelectItem>
                   <SelectItem value="High">High</SelectItem>
                   <SelectItem value="Medium">Medium</SelectItem>
                   <SelectItem value="Low">Low</SelectItem>
@@ -459,8 +469,8 @@ export default function MitigationPlansPage() {
                   <Label htmlFor="add-frequency">Review Frequency *</Label>
                   <Input
                     id="add-frequency"
-                    value={formData.review_frequency}
-                    onChange={(e) => setFormData({ ...formData, review_frequency: e.target.value })}
+                    value={formData.review_frequency || ''}
+                    onChange={(e) => setFormData({ ...formData, review_frequency: normalizeSelectValue(e.target.value) })}
                     placeholder="e.g., Monthly, Quarterly"
                     required
                   />
@@ -473,7 +483,7 @@ export default function MitigationPlansPage() {
                     required
                   >
                     <SelectTrigger id="add-effectiveness">
-                      <SelectValue placeholder="Select" />
+                      <SelectValue placeholder="Select effectiveness" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="High">High</SelectItem>
@@ -570,8 +580,8 @@ export default function MitigationPlansPage() {
                   <Label htmlFor="edit-frequency">Review Frequency *</Label>
                   <Input
                     id="edit-frequency"
-                    value={formData.review_frequency}
-                    onChange={(e) => setFormData({ ...formData, review_frequency: e.target.value })}
+                    value={formData.review_frequency || ''}
+                    onChange={(e) => setFormData({ ...formData, review_frequency: normalizeSelectValue(e.target.value) })}
                     required
                   />
                 </div>
@@ -583,7 +593,7 @@ export default function MitigationPlansPage() {
                     required
                   >
                     <SelectTrigger id="edit-effectiveness">
-                      <SelectValue />
+                      <SelectValue placeholder="Select effectiveness" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="High">High</SelectItem>
