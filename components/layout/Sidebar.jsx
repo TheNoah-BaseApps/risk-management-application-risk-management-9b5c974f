@@ -10,6 +10,7 @@ import {
   Users,
   FileText,
   User,
+  Shield,
 } from 'lucide-react';
 
 export default function Sidebar({ open, user }) {
@@ -21,6 +22,7 @@ export default function Sidebar({ open, user }) {
     { name: 'Assignments', href: '/assignments', icon: Users, permission: 'view_assignments' },
     { name: 'Reports', href: '/reports', icon: FileText, permission: 'view_reports' },
     { name: 'Risk Reports', href: '/risk-reports', icon: FileText, permission: 'view_reports' },
+    { name: 'Mitigation Plans', href: '/mitigation-plans', icon: Shield, permission: 'view_risks' },
     { name: 'Profile', href: '/profile', icon: User, permission: 'view_profile' },
   ];
 

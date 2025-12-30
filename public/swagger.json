@@ -445,6 +445,277 @@
         }
       }
     },
+    "/api/mitigation-plans/{id}": {
+      "get": {
+        "summary": "Get a single risk mitigation plan",
+        "description": "Retrieve details of a specific mitigation plan",
+        "tags": [
+          "Risk Mitigation Plans"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Mitigation plan ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved mitigation plan"
+          },
+          "404": {
+            "description": "Mitigation plan not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a risk mitigation plan",
+        "description": "Update an existing mitigation plan",
+        "tags": [
+          "Risk Mitigation Plans"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Mitigation plan ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "mitigation_plan_id": {
+                    "type": "string"
+                  },
+                  "risk_id": {
+                    "type": "string"
+                  },
+                  "mitigation_action": {
+                    "type": "string"
+                  },
+                  "action_owner": {
+                    "type": "string"
+                  },
+                  "implementation_date": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "review_frequency": {
+                    "type": "string"
+                  },
+                  "effectiveness": {
+                    "type": "string"
+                  },
+                  "monitoring_plan": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Mitigation plan updated successfully"
+          },
+          "404": {
+            "description": "Mitigation plan not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a risk mitigation plan",
+        "description": "Remove a mitigation plan from the system",
+        "tags": [
+          "Risk Mitigation Plans"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Mitigation plan ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Mitigation plan deleted successfully"
+          },
+          "404": {
+            "description": "Mitigation plan not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/mitigation-plans": {
+      "get": {
+        "summary": "Get all risk mitigation plans",
+        "description": "Retrieve a list of all risk mitigation plans with pagination and filtering",
+        "tags": [
+          "Risk Mitigation Plans"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "Page number for pagination"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 10
+            },
+            "description": "Number of items per page"
+          },
+          {
+            "in": "query",
+            "name": "risk_id",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by risk ID"
+          },
+          {
+            "in": "query",
+            "name": "effectiveness",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by effectiveness level"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved mitigation plans",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "page": {
+                      "type": "integer"
+                    },
+                    "limit": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new risk mitigation plan",
+        "description": "Create a new mitigation plan for a risk",
+        "tags": [
+          "Risk Mitigation Plans"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "mitigation_plan_id",
+                  "risk_id",
+                  "mitigation_action",
+                  "action_owner",
+                  "implementation_date",
+                  "review_frequency",
+                  "effectiveness",
+                  "monitoring_plan"
+                ],
+                "properties": {
+                  "mitigation_plan_id": {
+                    "type": "string"
+                  },
+                  "risk_id": {
+                    "type": "string"
+                  },
+                  "mitigation_action": {
+                    "type": "string"
+                  },
+                  "action_owner": {
+                    "type": "string"
+                  },
+                  "implementation_date": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "review_frequency": {
+                    "type": "string"
+                  },
+                  "effectiveness": {
+                    "type": "string"
+                  },
+                  "monitoring_plan": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Mitigation plan created successfully"
+          },
+          "400": {
+            "description": "Invalid request data"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
     "/api/reports/risks": {
       "get": {
         "summary": "Generate risk report",
