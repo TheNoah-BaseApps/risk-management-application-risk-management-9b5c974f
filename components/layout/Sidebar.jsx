@@ -11,6 +11,7 @@ import {
   FileText,
   User,
   Shield,
+  CheckCircle2,
 } from 'lucide-react';
 
 export default function Sidebar({ open, user }) {
@@ -23,6 +24,7 @@ export default function Sidebar({ open, user }) {
     { name: 'Reports', href: '/reports', icon: FileText, permission: 'view_reports' },
     { name: 'Risk Reports', href: '/risk-reports', icon: FileText, permission: 'view_reports' },
     { name: 'Mitigation Plans', href: '/mitigation-plans', icon: Shield, permission: 'view_risks' },
+    { name: 'Risk Resolutions', href: '/risk-resolutions', icon: CheckCircle2, permission: 'view_risks' },
     { name: 'Profile', href: '/profile', icon: User, permission: 'view_profile' },
   ];
 

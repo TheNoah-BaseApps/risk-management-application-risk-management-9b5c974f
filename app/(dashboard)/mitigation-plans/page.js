@@ -3,24 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -31,27 +15,38 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { toast } from 'sonner';
 import {
-  Plus,
-  Edit,
-  Trash2,
-  Shield,
-  Clock,
-  User,
-  TrendingUp,
-  Loader2,
-} from 'lucide-react';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Shield, Plus, Edit, Trash2, Search, Loader2, Calendar } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function MitigationPlansPage() {
   const router = useRouter();
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterEffectiveness, setFilterEffectiveness] = useState('');
+  
+  // Form state
   const [formData, setFormData] = useState({
     mitigation_plan_id: '',
     risk_id: '',
@@ -67,11 +62,15 @@ export default function MitigationPlansPage() {
     fetchPlans();
   }, []);
 
-  const fetchPlans = async () => {
+  async function fetchPlans() {
     try {
       setLoading(true);
-      const response = await fetch('/api/mitigation-plans');
+      const params = new URLSearchParams();
+      if (filterEffectiveness) params.append('effectiveness', filterEffectiveness);
+      
+      const response = await fetch(`/api/mitigation-plans?${params.toString()}`);
       const data = await response.json();
+      
       if (data.success) {
         setPlans(data.data);
       } else {
@@ -79,28 +78,25 @@ export default function MitigationPlansPage() {
       }
     } catch (error) {
       console.error('Error fetching plans:', error);
-      toast.error('Failed to fetch mitigation plans');
+      toast.error('Error loading mitigation plans');
     } finally {
       setLoading(false);
     }
-  };
+  }
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSelectChange = (name, value) => {
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
+  async function handleSubmit(e) {
     e.preventDefault();
     setSubmitting(true);
 
     try {
-      const response = await fetch('/api/mitigation-plans', {
-        method: 'POST',
+      const url = selectedPlan 
+        ? `/api/mitigation-plans/${selectedPlan.id}`
+        : '/api/mitigation-plans';
+      
+      const method = selectedPlan ? 'PUT' : 'POST';
+      
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
@@ -108,62 +104,26 @@ export default function MitigationPlansPage() {
       const data = await response.json();
 
       if (data.success) {
-        toast.success('Mitigation plan created successfully');
-        setShowAddModal(false);
-        setFormData({
-          mitigation_plan_id: '',
-          risk_id: '',
-          mitigation_action: '',
-          action_owner: '',
-          implementation_date: '',
-          review_frequency: '',
-          effectiveness: '',
-          monitoring_plan: '',
-        });
+        toast.success(selectedPlan ? 'Plan updated successfully' : 'Plan created successfully');
+        setShowAddDialog(false);
+        setShowEditDialog(false);
+        resetForm();
         fetchPlans();
       } else {
-        toast.error(data.error || 'Failed to create mitigation plan');
+        toast.error(data.error || 'Operation failed');
       }
     } catch (error) {
-      console.error('Error creating plan:', error);
-      toast.error('Failed to create mitigation plan');
+      console.error('Error submitting form:', error);
+      toast.error('An error occurred');
     } finally {
       setSubmitting(false);
     }
-  };
+  }
 
-  const handleEdit = async (e) => {
-    e.preventDefault();
+  async function handleDelete() {
+    if (!selectedPlan) return;
+    
     setSubmitting(true);
-
-    try {
-      const response = await fetch(`/api/mitigation-plans/${selectedPlan.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        toast.success('Mitigation plan updated successfully');
-        setShowEditModal(false);
-        setSelectedPlan(null);
-        fetchPlans();
-      } else {
-        toast.error(data.error || 'Failed to update mitigation plan');
-      }
-    } catch (error) {
-      console.error('Error updating plan:', error);
-      toast.error('Failed to update mitigation plan');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    setSubmitting(true);
-
     try {
       const response = await fetch(`/api/mitigation-plans/${selectedPlan.id}`, {
         method: 'DELETE',
@@ -172,22 +132,36 @@ export default function MitigationPlansPage() {
       const data = await response.json();
 
       if (data.success) {
-        toast.success('Mitigation plan deleted successfully');
+        toast.success('Plan deleted successfully');
         setShowDeleteDialog(false);
         setSelectedPlan(null);
         fetchPlans();
       } else {
-        toast.error(data.error || 'Failed to delete mitigation plan');
+        toast.error(data.error || 'Delete failed');
       }
     } catch (error) {
       console.error('Error deleting plan:', error);
-      toast.error('Failed to delete mitigation plan');
+      toast.error('An error occurred');
     } finally {
       setSubmitting(false);
     }
-  };
+  }
 
-  const openEditModal = (plan) => {
+  function resetForm() {
+    setFormData({
+      mitigation_plan_id: '',
+      risk_id: '',
+      mitigation_action: '',
+      action_owner: '',
+      implementation_date: '',
+      review_frequency: '',
+      effectiveness: '',
+      monitoring_plan: '',
+    });
+    setSelectedPlan(null);
+  }
+
+  function openEditDialog(plan) {
     setSelectedPlan(plan);
     setFormData({
       mitigation_plan_id: plan.mitigation_plan_id,
@@ -199,22 +173,22 @@ export default function MitigationPlansPage() {
       effectiveness: plan.effectiveness,
       monitoring_plan: plan.monitoring_plan,
     });
-    setShowEditModal(true);
-  };
+    setShowEditDialog(true);
+  }
 
-  const openDeleteDialog = (plan) => {
+  function openDeleteDialog(plan) {
     setSelectedPlan(plan);
     setShowDeleteDialog(true);
-  };
+  }
 
-  const getEffectivenessBadge = (effectiveness) => {
-    const variants = {
-      High: 'default',
-      Medium: 'secondary',
-      Low: 'destructive',
-    };
-    return <Badge variant={variants[effectiveness] || 'outline'}>{effectiveness}</Badge>;
-  };
+  const filteredPlans = plans.filter((plan) => {
+    const matchesSearch = 
+      plan.mitigation_plan_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      plan.risk_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      plan.action_owner?.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return matchesSearch;
+  });
 
   const stats = [
     {
@@ -226,34 +200,35 @@ export default function MitigationPlansPage() {
     },
     {
       title: 'High Effectiveness',
-      value: plans.filter((p) => p.effectiveness === 'High').length,
-      icon: TrendingUp,
+      value: plans.filter(p => p.effectiveness === 'High').length,
+      icon: Shield,
       color: 'text-green-600',
       bgColor: 'bg-green-50',
     },
     {
-      title: 'Active Plans',
-      value: plans.filter((p) => new Date(p.implementation_date) <= new Date()).length,
-      icon: Clock,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50',
+      title: 'Medium Effectiveness',
+      value: plans.filter(p => p.effectiveness === 'Medium').length,
+      icon: Shield,
+      color: 'text-yellow-600',
+      bgColor: 'bg-yellow-50',
     },
     {
-      title: 'Unique Owners',
-      value: new Set(plans.map((p) => p.action_owner)).size,
-      icon: User,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50',
+      title: 'Low Effectiveness',
+      value: plans.filter(p => p.effectiveness === 'Low').length,
+      icon: Shield,
+      color: 'text-red-600',
+      bgColor: 'bg-red-50',
     },
   ];
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-      </div>
-    );
-  }
+  const getEffectivenessBadge = (effectiveness) => {
+    const variants = {
+      High: 'default',
+      Medium: 'secondary',
+      Low: 'destructive',
+    };
+    return <Badge variant={variants[effectiveness] || 'outline'}>{effectiveness}</Badge>;
+  };
 
   return (
     <div className="space-y-6">
@@ -261,53 +236,108 @@ export default function MitigationPlansPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Risk Mitigation Plans</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Manage mitigation strategies and action plans for identified risks
-          </p>
+          <p className="text-gray-600 mt-1">Manage mitigation actions and effectiveness tracking</p>
         </div>
-        <Button onClick={() => setShowAddModal(true)}>
-          <Plus className="mr-2 h-4 w-4" />
+        <Button onClick={() => setShowAddDialog(true)} className="gap-2">
+          <Plus className="h-4 w-4" />
           Add Mitigation Plan
         </Button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => {
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat, index) => {
           const Icon = stat.icon;
           return (
-            <Card key={stat.title}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-                <div className={`${stat.bgColor} p-2 rounded-lg`}>
-                  <Icon className={`h-4 w-4 ${stat.color}`} />
+            <Card key={index}>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                    <p className="text-2xl font-bold text-gray-900 mt-2">{stat.value}</p>
+                  </div>
+                  <div className={`p-3 rounded-lg ${stat.bgColor}`}>
+                    <Icon className={`h-6 w-6 ${stat.color}`} />
+                  </div>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stat.value}</div>
               </CardContent>
             </Card>
           );
         })}
       </div>
 
+      {/* Filters */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Filters</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <Label htmlFor="search">Search</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  id="search"
+                  placeholder="Search plans..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="effectiveness">Effectiveness</Label>
+              <Select value={filterEffectiveness} onValueChange={setFilterEffectiveness}>
+                <SelectTrigger id="effectiveness">
+                  <SelectValue placeholder="All" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All</SelectItem>
+                  <SelectItem value="High">High</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-end">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setSearchTerm('');
+                  setFilterEffectiveness('');
+                  fetchPlans();
+                }}
+              >
+                Clear Filters
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Table */}
       <Card>
         <CardHeader>
-          <CardTitle>All Mitigation Plans</CardTitle>
+          <CardTitle>Mitigation Plans</CardTitle>
+          <CardDescription>
+            {filteredPlans.length} plan{filteredPlans.length !== 1 ? 's' : ''} found
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          {plans.length === 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            </div>
+          ) : filteredPlans.length === 0 ? (
             <div className="text-center py-12">
-              <Shield className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-semibold text-gray-900">No mitigation plans</h3>
-              <p className="mt-1 text-sm text-gray-500">Get started by creating a new mitigation plan.</p>
-              <div className="mt-6">
-                <Button onClick={() => setShowAddModal(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Mitigation Plan
-                </Button>
-              </div>
+              <Shield className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No mitigation plans found</h3>
+              <p className="text-gray-600 mb-4">Get started by creating your first mitigation plan</p>
+              <Button onClick={() => setShowAddDialog(true)} className="gap-2">
+                <Plus className="h-4 w-4" />
+                Add Mitigation Plan
+              </Button>
             </div>
           ) : (
             <Table>
@@ -317,37 +347,42 @@ export default function MitigationPlansPage() {
                   <TableHead>Risk ID</TableHead>
                   <TableHead>Action</TableHead>
                   <TableHead>Owner</TableHead>
-                  <TableHead>Implementation Date</TableHead>
-                  <TableHead>Review Frequency</TableHead>
+                  <TableHead>Implementation</TableHead>
+                  <TableHead>Frequency</TableHead>
                   <TableHead>Effectiveness</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {plans.map((plan) => (
+                {filteredPlans.map((plan) => (
                   <TableRow key={plan.id}>
                     <TableCell className="font-medium">{plan.mitigation_plan_id}</TableCell>
                     <TableCell>{plan.risk_id}</TableCell>
                     <TableCell className="max-w-xs truncate">{plan.mitigation_action}</TableCell>
                     <TableCell>{plan.action_owner}</TableCell>
-                    <TableCell>{new Date(plan.implementation_date).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3 text-gray-400" />
+                        {new Date(plan.implementation_date).toLocaleDateString()}
+                      </div>
+                    </TableCell>
                     <TableCell>{plan.review_frequency}</TableCell>
                     <TableCell>{getEffectivenessBadge(plan.effectiveness)}</TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
+                      <div className="flex items-center justify-end gap-2">
                         <Button
                           variant="ghost"
-                          size="icon"
-                          onClick={() => openEditModal(plan)}
+                          size="sm"
+                          onClick={() => openEditDialog(plan)}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="ghost"
-                          size="icon"
+                          size="sm"
                           onClick={() => openDeleteDialog(plan)}
                         >
-                          <Trash2 className="h-4 w-4 text-red-500" />
+                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>
@@ -359,273 +394,223 @@ export default function MitigationPlansPage() {
         </CardContent>
       </Card>
 
-      {/* Add Modal */}
-      <Dialog open={showAddModal} onOpenChange={setShowAddModal}>
+      {/* Add Dialog */}
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Add Mitigation Plan</DialogTitle>
-            <DialogDescription>
-              Create a new risk mitigation plan with action details
-            </DialogDescription>
+            <DialogDescription>Create a new risk mitigation plan</DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="mitigation_plan_id">Plan ID *</Label>
-                <Input
-                  id="mitigation_plan_id"
-                  name="mitigation_plan_id"
-                  value={formData.mitigation_plan_id}
-                  onChange={handleInputChange}
+          <form onSubmit={handleSubmit}>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="add-plan-id">Plan ID *</Label>
+                  <Input
+                    id="add-plan-id"
+                    value={formData.mitigation_plan_id}
+                    onChange={(e) => setFormData({ ...formData, mitigation_plan_id: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="add-risk-id">Risk ID *</Label>
+                  <Input
+                    id="add-risk-id"
+                    value={formData.risk_id}
+                    onChange={(e) => setFormData({ ...formData, risk_id: e.target.value })}
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="add-action">Mitigation Action *</Label>
+                <Textarea
+                  id="add-action"
+                  value={formData.mitigation_action}
+                  onChange={(e) => setFormData({ ...formData, mitigation_action: e.target.value })}
                   required
-                  placeholder="MP-001"
+                  rows={3}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="risk_id">Risk ID *</Label>
-                <Input
-                  id="risk_id"
-                  name="risk_id"
-                  value={formData.risk_id}
-                  onChange={handleInputChange}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="add-owner">Action Owner *</Label>
+                  <Input
+                    id="add-owner"
+                    value={formData.action_owner}
+                    onChange={(e) => setFormData({ ...formData, action_owner: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="add-date">Implementation Date *</Label>
+                  <Input
+                    id="add-date"
+                    type="date"
+                    value={formData.implementation_date}
+                    onChange={(e) => setFormData({ ...formData, implementation_date: e.target.value })}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="add-frequency">Review Frequency *</Label>
+                  <Input
+                    id="add-frequency"
+                    value={formData.review_frequency}
+                    onChange={(e) => setFormData({ ...formData, review_frequency: e.target.value })}
+                    placeholder="e.g., Monthly, Quarterly"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="add-effectiveness">Effectiveness *</Label>
+                  <Select
+                    value={formData.effectiveness}
+                    onValueChange={(value) => setFormData({ ...formData, effectiveness: value })}
+                    required
+                  >
+                    <SelectTrigger id="add-effectiveness">
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="High">High</SelectItem>
+                      <SelectItem value="Medium">Medium</SelectItem>
+                      <SelectItem value="Low">Low</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="add-monitoring">Monitoring Plan *</Label>
+                <Textarea
+                  id="add-monitoring"
+                  value={formData.monitoring_plan}
+                  onChange={(e) => setFormData({ ...formData, monitoring_plan: e.target.value })}
                   required
-                  placeholder="RISK-001"
+                  rows={3}
                 />
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="mitigation_action">Mitigation Action *</Label>
-              <Textarea
-                id="mitigation_action"
-                name="mitigation_action"
-                value={formData.mitigation_action}
-                onChange={handleInputChange}
-                required
-                placeholder="Describe the mitigation action..."
-                rows={3}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="action_owner">Action Owner *</Label>
-                <Input
-                  id="action_owner"
-                  name="action_owner"
-                  value={formData.action_owner}
-                  onChange={handleInputChange}
-                  required
-                  placeholder="John Doe"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="implementation_date">Implementation Date *</Label>
-                <Input
-                  id="implementation_date"
-                  name="implementation_date"
-                  type="date"
-                  value={formData.implementation_date}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="review_frequency">Review Frequency *</Label>
-                <Select
-                  value={formData.review_frequency}
-                  onValueChange={(value) => handleSelectChange('review_frequency', value)}
-                  required
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select frequency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Daily">Daily</SelectItem>
-                    <SelectItem value="Weekly">Weekly</SelectItem>
-                    <SelectItem value="Monthly">Monthly</SelectItem>
-                    <SelectItem value="Quarterly">Quarterly</SelectItem>
-                    <SelectItem value="Annually">Annually</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="effectiveness">Effectiveness *</Label>
-                <Select
-                  value={formData.effectiveness}
-                  onValueChange={(value) => handleSelectChange('effectiveness', value)}
-                  required
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select effectiveness" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="High">High</SelectItem>
-                    <SelectItem value="Medium">Medium</SelectItem>
-                    <SelectItem value="Low">Low</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="monitoring_plan">Monitoring Plan *</Label>
-              <Textarea
-                id="monitoring_plan"
-                name="monitoring_plan"
-                value={formData.monitoring_plan}
-                onChange={handleInputChange}
-                required
-                placeholder="Describe the monitoring plan..."
-                rows={3}
-              />
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setShowAddModal(false)}>
+              <Button type="button" variant="outline" onClick={() => { setShowAddDialog(false); resetForm(); }}>
                 Cancel
               </Button>
               <Button type="submit" disabled={submitting}>
-                {submitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  'Create Plan'
-                )}
+                {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Create Plan
               </Button>
             </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
 
-      {/* Edit Modal */}
-      <Dialog open={showEditModal} onOpenChange={setShowEditModal}>
+      {/* Edit Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Mitigation Plan</DialogTitle>
-            <DialogDescription>
-              Update the mitigation plan details
-            </DialogDescription>
+            <DialogDescription>Update mitigation plan details</DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleEdit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit_mitigation_plan_id">Plan ID *</Label>
-                <Input
-                  id="edit_mitigation_plan_id"
-                  name="mitigation_plan_id"
-                  value={formData.mitigation_plan_id}
-                  onChange={handleInputChange}
+          <form onSubmit={handleSubmit}>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-plan-id">Plan ID</Label>
+                  <Input
+                    id="edit-plan-id"
+                    value={formData.mitigation_plan_id}
+                    disabled
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-risk-id">Risk ID</Label>
+                  <Input
+                    id="edit-risk-id"
+                    value={formData.risk_id}
+                    disabled
+                  />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="edit-action">Mitigation Action *</Label>
+                <Textarea
+                  id="edit-action"
+                  value={formData.mitigation_action}
+                  onChange={(e) => setFormData({ ...formData, mitigation_action: e.target.value })}
                   required
+                  rows={3}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit_risk_id">Risk ID *</Label>
-                <Input
-                  id="edit_risk_id"
-                  name="risk_id"
-                  value={formData.risk_id}
-                  onChange={handleInputChange}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-owner">Action Owner *</Label>
+                  <Input
+                    id="edit-owner"
+                    value={formData.action_owner}
+                    onChange={(e) => setFormData({ ...formData, action_owner: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-date">Implementation Date *</Label>
+                  <Input
+                    id="edit-date"
+                    type="date"
+                    value={formData.implementation_date}
+                    onChange={(e) => setFormData({ ...formData, implementation_date: e.target.value })}
+                    required
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-frequency">Review Frequency *</Label>
+                  <Input
+                    id="edit-frequency"
+                    value={formData.review_frequency}
+                    onChange={(e) => setFormData({ ...formData, review_frequency: e.target.value })}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-effectiveness">Effectiveness *</Label>
+                  <Select
+                    value={formData.effectiveness}
+                    onValueChange={(value) => setFormData({ ...formData, effectiveness: value })}
+                    required
+                  >
+                    <SelectTrigger id="edit-effectiveness">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="High">High</SelectItem>
+                      <SelectItem value="Medium">Medium</SelectItem>
+                      <SelectItem value="Low">Low</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="edit-monitoring">Monitoring Plan *</Label>
+                <Textarea
+                  id="edit-monitoring"
+                  value={formData.monitoring_plan}
+                  onChange={(e) => setFormData({ ...formData, monitoring_plan: e.target.value })}
                   required
+                  rows={3}
                 />
               </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit_mitigation_action">Mitigation Action *</Label>
-              <Textarea
-                id="edit_mitigation_action"
-                name="mitigation_action"
-                value={formData.mitigation_action}
-                onChange={handleInputChange}
-                required
-                rows={3}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit_action_owner">Action Owner *</Label>
-                <Input
-                  id="edit_action_owner"
-                  name="action_owner"
-                  value={formData.action_owner}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit_implementation_date">Implementation Date *</Label>
-                <Input
-                  id="edit_implementation_date"
-                  name="implementation_date"
-                  type="date"
-                  value={formData.implementation_date}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit_review_frequency">Review Frequency *</Label>
-                <Select
-                  value={formData.review_frequency}
-                  onValueChange={(value) => handleSelectChange('review_frequency', value)}
-                  required
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Daily">Daily</SelectItem>
-                    <SelectItem value="Weekly">Weekly</SelectItem>
-                    <SelectItem value="Monthly">Monthly</SelectItem>
-                    <SelectItem value="Quarterly">Quarterly</SelectItem>
-                    <SelectItem value="Annually">Annually</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit_effectiveness">Effectiveness *</Label>
-                <Select
-                  value={formData.effectiveness}
-                  onValueChange={(value) => handleSelectChange('effectiveness', value)}
-                  required
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="High">High</SelectItem>
-                    <SelectItem value="Medium">Medium</SelectItem>
-                    <SelectItem value="Low">Low</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit_monitoring_plan">Monitoring Plan *</Label>
-              <Textarea
-                id="edit_monitoring_plan"
-                name="monitoring_plan"
-                value={formData.monitoring_plan}
-                onChange={handleInputChange}
-                required
-                rows={3}
-              />
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setShowEditModal(false)}>
+              <Button type="button" variant="outline" onClick={() => { setShowEditDialog(false); resetForm(); }}>
                 Cancel
               </Button>
               <Button type="submit" disabled={submitting}>
-                {submitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Updating...
-                  </>
-                ) : (
-                  'Update Plan'
-                )}
+                {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Update Plan
               </Button>
             </DialogFooter>
           </form>
@@ -636,33 +621,18 @@ export default function MitigationPlansPage() {
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete Mitigation Plan</DialogTitle>
+            <DialogTitle>Confirm Deletion</DialogTitle>
             <DialogDescription>
               Are you sure you want to delete this mitigation plan? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowDeleteDialog(false)}
-            >
+            <Button variant="outline" onClick={() => { setShowDeleteDialog(false); setSelectedPlan(null); }}>
               Cancel
             </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={submitting}
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                'Delete'
-              )}
+            <Button variant="destructive" onClick={handleDelete} disabled={submitting}>
+              {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Delete
             </Button>
           </DialogFooter>
         </DialogContent>

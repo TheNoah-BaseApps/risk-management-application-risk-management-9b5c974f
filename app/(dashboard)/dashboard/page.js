@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import StatsWidget from '@/components/ui/StatsWidget';
 import AlertBanner from '@/components/ui/AlertBanner';
 import ActivityTimeline from '@/components/ui/ActivityTimeline';
-import { AlertTriangle, CheckCircle, Clock, TrendingUp, FileText, ArrowRight, Shield } from 'lucide-react';
+import { AlertTriangle, CheckCircle, CheckCircle2, Clock, TrendingUp, FileText, ArrowRight, Shield } from 'lucide-react';
 import Link from 'next/link';
 
 export default function DashboardPage() {
@@ -150,7 +150,7 @@ export default function DashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600 mb-4">Manage risk mitigation strategies and action plans</p>
+              <p className="text-gray-600 mb-4">Track mitigation actions and effectiveness</p>
               {stats?.totalMitigationPlans !== undefined && (
                 <p className="text-sm text-gray-500 mb-4">
                   {stats.totalMitigationPlans} {stats.totalMitigationPlans === 1 ? 'plan' : 'plans'}
@@ -159,6 +159,31 @@ export default function DashboardPage() {
               <Link href="/mitigation-plans">
                 <Button variant="outline" className="w-full group">
                   View Plans
+                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <CheckCircle2 className="h-6 w-6 text-purple-600" />
+                </div>
+                <CardTitle>Risk Resolutions</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-4">Track and manage resolved risks and follow-up actions</p>
+              {stats?.totalResolutions !== undefined && (
+                <p className="text-sm text-gray-500 mb-4">
+                  {stats.totalResolutions} {stats.totalResolutions === 1 ? 'resolution' : 'resolutions'}
+                </p>
+              )}
+              <Link href="/risk-resolutions">
+                <Button variant="outline" className="w-full group">
+                  View Resolutions
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>

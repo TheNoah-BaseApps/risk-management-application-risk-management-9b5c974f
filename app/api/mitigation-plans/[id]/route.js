@@ -5,24 +5,23 @@ import { query } from '@/lib/database/aurora';
  * @swagger
  * /api/mitigation-plans/{id}:
  *   get:
- *     summary: Get a single risk mitigation plan
- *     description: Retrieve details of a specific mitigation plan
- *     tags:
- *       - Risk Mitigation Plans
+ *     summary: Get a specific mitigation plan
+ *     description: Retrieve details of a specific mitigation plan by ID
+ *     tags: [Risk Mitigation Plans]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         description: Mitigation plan ID
+ *         description: Mitigation plan UUID
  *     responses:
  *       200:
- *         description: Successfully retrieved mitigation plan
+ *         description: Mitigation plan retrieved successfully
  *       404:
  *         description: Mitigation plan not found
  *       500:
- *         description: Internal server error
+ *         description: Server error
  */
 export async function GET(request, { params }) {
   try {
@@ -39,10 +38,7 @@ export async function GET(request, { params }) {
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      data: result.rows[0]
-    });
+    return NextResponse.json({ success: true, data: result.rows[0] });
   } catch (error) {
     console.error('Error fetching mitigation plan:', error);
     return NextResponse.json(
@@ -56,17 +52,16 @@ export async function GET(request, { params }) {
  * @swagger
  * /api/mitigation-plans/{id}:
  *   put:
- *     summary: Update a risk mitigation plan
+ *     summary: Update a mitigation plan
  *     description: Update an existing mitigation plan
- *     tags:
- *       - Risk Mitigation Plans
+ *     tags: [Risk Mitigation Plans]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         description: Mitigation plan ID
+ *         description: Mitigation plan UUID
  *     requestBody:
  *       required: true
  *       content:
@@ -74,10 +69,6 @@ export async function GET(request, { params }) {
  *           schema:
  *             type: object
  *             properties:
- *               mitigation_plan_id:
- *                 type: string
- *               risk_id:
- *                 type: string
  *               mitigation_action:
  *                 type: string
  *               action_owner:
@@ -89,6 +80,7 @@ export async function GET(request, { params }) {
  *                 type: string
  *               effectiveness:
  *                 type: string
+ *                 enum: [High, Medium, Low]
  *               monitoring_plan:
  *                 type: string
  *     responses:
@@ -97,30 +89,47 @@ export async function GET(request, { params }) {
  *       404:
  *         description: Mitigation plan not found
  *       500:
- *         description: Internal server error
+ *         description: Server error
  */
 export async function PUT(request, { params }) {
   try {
     const { id } = params;
     const body = await request.json();
-    const {
-      mitigation_plan_id,
-      risk_id,
-      mitigation_action,
-      action_owner,
-      implementation_date,
-      review_frequency,
-      effectiveness,
-      monitoring_plan
-    } = body;
+    
+    const updateFields = [];
+    const updateValues = [];
+    let paramIndex = 1;
+
+    const allowedFields = [
+      'mitigation_action',
+      'action_owner',
+      'implementation_date',
+      'review_frequency',
+      'effectiveness',
+      'monitoring_plan',
+    ];
+
+    allowedFields.forEach((field) => {
+      if (body[field] !== undefined) {
+        updateFields.push(`${field} = $${paramIndex}`);
+        updateValues.push(body[field]);
+        paramIndex++;
+      }
+    });
+
+    if (updateFields.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'No fields to update' },
+        { status: 400 }
+      );
+    }
+
+    updateFields.push(`updated_at = NOW()`);
+    updateValues.push(id);
 
     const result = await query(
-      `UPDATE risk_mitigation_plans 
-       SET mitigation_plan_id = $1, risk_id = $2, mitigation_action = $3, action_owner = $4, 
-           implementation_date = $5, review_frequency = $6, effectiveness = $7, monitoring_plan = $8, updated_at = NOW()
-       WHERE id = $9 
-       RETURNING *`,
-      [mitigation_plan_id, risk_id, mitigation_action, action_owner, implementation_date, review_frequency, effectiveness, monitoring_plan, id]
+      `UPDATE risk_mitigation_plans SET ${updateFields.join(', ')} WHERE id = $${paramIndex} RETURNING *`,
+      updateValues
     );
 
     if (result.rows.length === 0) {
@@ -130,10 +139,7 @@ export async function PUT(request, { params }) {
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      data: result.rows[0]
-    });
+    return NextResponse.json({ success: true, data: result.rows[0] });
   } catch (error) {
     console.error('Error updating mitigation plan:', error);
     return NextResponse.json(
@@ -147,24 +153,23 @@ export async function PUT(request, { params }) {
  * @swagger
  * /api/mitigation-plans/{id}:
  *   delete:
- *     summary: Delete a risk mitigation plan
+ *     summary: Delete a mitigation plan
  *     description: Remove a mitigation plan from the system
- *     tags:
- *       - Risk Mitigation Plans
+ *     tags: [Risk Mitigation Plans]
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         description: Mitigation plan ID
+ *         description: Mitigation plan UUID
  *     responses:
  *       200:
  *         description: Mitigation plan deleted successfully
  *       404:
  *         description: Mitigation plan not found
  *       500:
- *         description: Internal server error
+ *         description: Server error
  */
 export async function DELETE(request, { params }) {
   try {
@@ -181,9 +186,10 @@ export async function DELETE(request, { params }) {
       );
     }
 
-    return NextResponse.json({
-      success: true,
-      message: 'Mitigation plan deleted successfully'
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Mitigation plan deleted successfully',
+      data: result.rows[0]
     });
   } catch (error) {
     console.error('Error deleting mitigation plan:', error);

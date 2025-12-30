@@ -447,8 +447,8 @@
     },
     "/api/mitigation-plans/{id}": {
       "get": {
-        "summary": "Get a single risk mitigation plan",
-        "description": "Retrieve details of a specific mitigation plan",
+        "summary": "Get a specific mitigation plan",
+        "description": "Retrieve details of a specific mitigation plan by ID",
         "tags": [
           "Risk Mitigation Plans"
         ],
@@ -460,23 +460,23 @@
             "schema": {
               "type": "string"
             },
-            "description": "Mitigation plan ID"
+            "description": "Mitigation plan UUID"
           }
         ],
         "responses": {
           "200": {
-            "description": "Successfully retrieved mitigation plan"
+            "description": "Mitigation plan retrieved successfully"
           },
           "404": {
             "description": "Mitigation plan not found"
           },
           "500": {
-            "description": "Internal server error"
+            "description": "Server error"
           }
         }
       },
       "put": {
-        "summary": "Update a risk mitigation plan",
+        "summary": "Update a mitigation plan",
         "description": "Update an existing mitigation plan",
         "tags": [
           "Risk Mitigation Plans"
@@ -489,7 +489,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Mitigation plan ID"
+            "description": "Mitigation plan UUID"
           }
         ],
         "requestBody": {
@@ -499,12 +499,6 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "mitigation_plan_id": {
-                    "type": "string"
-                  },
-                  "risk_id": {
-                    "type": "string"
-                  },
                   "mitigation_action": {
                     "type": "string"
                   },
@@ -519,7 +513,12 @@
                     "type": "string"
                   },
                   "effectiveness": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                      "High",
+                      "Medium",
+                      "Low"
+                    ]
                   },
                   "monitoring_plan": {
                     "type": "string"
@@ -537,12 +536,12 @@
             "description": "Mitigation plan not found"
           },
           "500": {
-            "description": "Internal server error"
+            "description": "Server error"
           }
         }
       },
       "delete": {
-        "summary": "Delete a risk mitigation plan",
+        "summary": "Delete a mitigation plan",
         "description": "Remove a mitigation plan from the system",
         "tags": [
           "Risk Mitigation Plans"
@@ -555,7 +554,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Mitigation plan ID"
+            "description": "Mitigation plan UUID"
           }
         ],
         "responses": {
@@ -566,7 +565,7 @@
             "description": "Mitigation plan not found"
           },
           "500": {
-            "description": "Internal server error"
+            "description": "Server error"
           }
         }
       }
@@ -607,16 +606,29 @@
           },
           {
             "in": "query",
-            "name": "effectiveness",
+            "name": "action_owner",
             "schema": {
               "type": "string"
+            },
+            "description": "Filter by action owner"
+          },
+          {
+            "in": "query",
+            "name": "effectiveness",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "High",
+                "Medium",
+                "Low"
+              ]
             },
             "description": "Filter by effectiveness level"
           }
         ],
         "responses": {
           "200": {
-            "description": "Successfully retrieved mitigation plans",
+            "description": "List of mitigation plans retrieved successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -646,13 +658,13 @@
             }
           },
           "500": {
-            "description": "Internal server error"
+            "description": "Server error"
           }
         }
       },
       "post": {
         "summary": "Create a new risk mitigation plan",
-        "description": "Create a new mitigation plan for a risk",
+        "description": "Create a new mitigation plan with validation",
         "tags": [
           "Risk Mitigation Plans"
         ],
@@ -693,7 +705,12 @@
                     "type": "string"
                   },
                   "effectiveness": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                      "High",
+                      "Medium",
+                      "Low"
+                    ]
                   },
                   "monitoring_plan": {
                     "type": "string"
@@ -708,10 +725,10 @@
             "description": "Mitigation plan created successfully"
           },
           "400": {
-            "description": "Invalid request data"
+            "description": "Validation error"
           },
           "500": {
-            "description": "Internal server error"
+            "description": "Server error"
           }
         }
       }
@@ -1016,6 +1033,255 @@
         "responses": {
           "201": {
             "description": "Risk report created successfully"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/risk-resolutions/{id}": {
+      "get": {
+        "summary": "Get a risk resolution by ID",
+        "description": "Retrieve a specific risk resolution record",
+        "tags": [
+          "Risk Resolutions"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Risk resolution ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Risk resolution details"
+          },
+          "404": {
+            "description": "Risk resolution not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a risk resolution",
+        "description": "Update an existing risk resolution record",
+        "tags": [
+          "Risk Resolutions"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Risk resolution ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "resolution_summary": {
+                    "type": "string"
+                  },
+                  "resolution_date": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "resolved_by": {
+                    "type": "string"
+                  },
+                  "final_status": {
+                    "type": "string"
+                  },
+                  "resolution_evidence": {
+                    "type": "string"
+                  },
+                  "follow_up_action": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Risk resolution updated successfully"
+          },
+          "404": {
+            "description": "Risk resolution not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a risk resolution",
+        "description": "Delete a risk resolution record",
+        "tags": [
+          "Risk Resolutions"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Risk resolution ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Risk resolution deleted successfully"
+          },
+          "404": {
+            "description": "Risk resolution not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/risk-resolutions": {
+      "get": {
+        "summary": "Get all risk resolutions",
+        "description": "Retrieve all risk resolution records with pagination support",
+        "tags": [
+          "Risk Resolutions"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 50
+            },
+            "description": "Maximum number of records to return"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "description": "Number of records to skip"
+          },
+          {
+            "in": "query",
+            "name": "risk_id",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by risk ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of risk resolutions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "total": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new risk resolution",
+        "description": "Create a new risk resolution record",
+        "tags": [
+          "Risk Resolutions"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "resolution_id",
+                  "risk_id",
+                  "resolution_summary",
+                  "resolution_date",
+                  "resolved_by",
+                  "final_status"
+                ],
+                "properties": {
+                  "resolution_id": {
+                    "type": "string"
+                  },
+                  "risk_id": {
+                    "type": "string"
+                  },
+                  "resolution_summary": {
+                    "type": "string"
+                  },
+                  "resolution_date": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "resolved_by": {
+                    "type": "string"
+                  },
+                  "final_status": {
+                    "type": "string"
+                  },
+                  "resolution_evidence": {
+                    "type": "string"
+                  },
+                  "follow_up_action": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Risk resolution created successfully"
           },
           "400": {
             "description": "Invalid input"
