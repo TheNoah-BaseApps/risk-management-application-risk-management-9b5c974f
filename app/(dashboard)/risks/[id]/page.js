@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,6 +26,7 @@ const normalizeRiskData = (risk) => ({
 export default function RiskDetailPage() {
   const router = useRouter();
   const params = useParams();
+  const riskId = params.id;
   const [risk, setRisk] = useState(null);
   const [updates, setUpdates] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,41 +34,67 @@ export default function RiskDetailPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  useEffect(() => {
-    const fetchRiskDetails = async () => {
-      try {
-        const [riskRes, updatesRes] = await Promise.all([
-          fetch(`/api/risks/${params.id}`, { credentials: 'include' }),
-          fetch(`/api/risks/${params.id}/updates`, { credentials: 'include' }),
-        ]);
+  const hasFetchedRisk = useRef(false);
+  const hasFetchedUpdates = useRef(false);
 
-        if (!riskRes.ok) {
-          throw new Error('Failed to fetch risk details');
-        }
+  const fetchRiskDetails = useCallback(async () => {
+    if (!riskId || hasFetchedRisk.current) return;
+    
+    hasFetchedRisk.current = true;
+    setLoading(true);
+    
+    try {
+      const response = await fetch(`/api/risks/${riskId}`, { credentials: 'include' });
 
-        const riskData = await riskRes.json();
-        const updatesData = updatesRes.ok ? await updatesRes.json() : { data: [] };
-
-        const normalized = normalizeRiskData(riskData.data);
-        setRisk(normalized);
-        setUpdates(updatesData.data || []);
-      } catch (err) {
-        console.error('Fetch risk details error:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
+      if (!response.ok) {
+        throw new Error('Failed to fetch risk details');
       }
-    };
 
-    if (params.id) {
+      const riskData = await response.json();
+      const normalized = normalizeRiskData(riskData.data);
+      setRisk(normalized);
+      setError(null);
+    } catch (err) {
+      console.error('Fetch risk details error:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [riskId]);
+
+  const fetchUpdates = useCallback(async () => {
+    if (!riskId || hasFetchedUpdates.current) return;
+    
+    hasFetchedUpdates.current = true;
+    
+    try {
+      const response = await fetch(`/api/risks/${riskId}/updates`, { credentials: 'include' });
+      
+      if (response.ok) {
+        const updatesData = await response.json();
+        setUpdates(updatesData.data || []);
+      }
+    } catch (err) {
+      console.error('Fetch updates error:', err);
+    }
+  }, [riskId]);
+
+  useEffect(() => {
+    if (riskId && !hasFetchedRisk.current) {
       fetchRiskDetails();
     }
-  }, [params.id]);
+  }, [riskId, fetchRiskDetails]);
+
+  useEffect(() => {
+    if (riskId && !hasFetchedUpdates.current) {
+      fetchUpdates();
+    }
+  }, [riskId, fetchUpdates]);
 
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      const response = await fetch(`/api/risks/${params.id}`, {
+      const response = await fetch(`/api/risks/${riskId}`, {
         method: 'DELETE',
         credentials: 'include',
       });

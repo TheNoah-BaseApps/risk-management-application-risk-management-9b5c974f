@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,43 +24,47 @@ const normalizeAssignmentData = (assignment) => ({
 export default function AssignmentDetailPage() {
   const router = useRouter();
   const params = useParams();
+  const assignmentId = params.id;
   const [assignment, setAssignment] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const hasFetched = useRef(false);
+
+  const fetchAssignmentDetails = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/assignments/${assignmentId}`, {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch assignment details');
+      }
+
+      const data = await response.json();
+      const normalized = normalizeAssignmentData(data.data);
+      setAssignment(normalized);
+      setError(null);
+    } catch (err) {
+      console.error('Fetch assignment details error:', err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [assignmentId]);
 
   useEffect(() => {
-    const fetchAssignmentDetails = async () => {
-      try {
-        const response = await fetch(`/api/assignments/${params.id}`, {
-          credentials: 'include',
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch assignment details');
-        }
-
-        const data = await response.json();
-        const normalized = normalizeAssignmentData(data.data);
-        setAssignment(normalized);
-      } catch (err) {
-        console.error('Fetch assignment details error:', err);
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (params.id) {
+    if (assignmentId && !hasFetched.current) {
+      hasFetched.current = true;
       fetchAssignmentDetails();
     }
-  }, [params.id]);
+  }, [assignmentId, fetchAssignmentDetails]);
 
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      const response = await fetch(`/api/assignments/${params.id}`, {
+      const response = await fetch(`/api/assignments/${assignmentId}`, {
         method: 'DELETE',
         credentials: 'include',
       });

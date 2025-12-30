@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -20,14 +20,16 @@ export default function AssignmentsPage() {
     priority: '',
     search: '',
   });
+  
+  const hasFetched = useRef(false);
 
-  const fetchAssignments = async () => {
+  const fetchAssignments = useCallback(async (currentFilters = filters) => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
-      if (filters.status) params.append('status', filters.status);
-      if (filters.priority) params.append('priority', filters.priority);
-      if (filters.search) params.append('search', filters.search);
+      if (currentFilters.status) params.append('status', currentFilters.status);
+      if (currentFilters.priority) params.append('priority', currentFilters.priority);
+      if (currentFilters.search) params.append('search', currentFilters.search);
 
       const response = await fetch(`/api/assignments?${params.toString()}`, {
         credentials: 'include',
@@ -46,14 +48,19 @@ export default function AssignmentsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchAssignments();
-  }, [filters]);
+    if (!hasFetched.current) {
+      hasFetched.current = true;
+      fetchAssignments();
+    }
+  }, [fetchAssignments]);
 
   const handleFilterChange = (key, value) => {
-    setFilters({ ...filters, [key]: value });
+    const newFilters = { ...filters, [key]: value };
+    setFilters(newFilters);
+    fetchAssignments(newFilters);
   };
 
   const filterOptions = {
@@ -109,7 +116,7 @@ export default function AssignmentsPage() {
           <AlertDescription>{error}</AlertDescription>
         </Alert>
       ) : (
-        <AssignmentList assignments={assignments} onRefresh={fetchAssignments} />
+        <AssignmentList assignments={assignments} onRefresh={() => fetchAssignments(filters)} />
       )}
     </div>
   );

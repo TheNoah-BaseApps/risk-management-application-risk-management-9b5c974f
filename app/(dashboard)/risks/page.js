@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -20,8 +20,9 @@ export default function RisksPage() {
     status: '',
     search: '',
   });
+  const hasFetched = useRef(false);
 
-  const fetchRisks = async () => {
+  const fetchRisks = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
@@ -46,11 +47,16 @@ export default function RisksPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters.category, filters.status, filters.search]);
 
   useEffect(() => {
-    fetchRisks();
-  }, [filters]);
+    if (!hasFetched.current) {
+      hasFetched.current = true;
+      fetchRisks();
+    } else {
+      fetchRisks();
+    }
+  }, [fetchRisks]);
 
   const handleFilterChange = (key, value) => {
     setFilters({ ...filters, [key]: value });
