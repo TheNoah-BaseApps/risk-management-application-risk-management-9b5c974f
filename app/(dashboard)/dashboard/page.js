@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 import StatsWidget from '@/components/ui/StatsWidget';
 import AlertBanner from '@/components/ui/AlertBanner';
 import ActivityTimeline from '@/components/ui/ActivityTimeline';
-import { AlertTriangle, CheckCircle, Clock, TrendingUp } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Clock, TrendingUp, FileText, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
 
 export default function DashboardPage() {
   const [stats, setStats] = useState(null);
@@ -108,6 +110,36 @@ export default function DashboardPage() {
           trend={stats?.resolutionTrend}
           color="green"
         />
+      </div>
+
+      <div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-4">Workflows</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <FileText className="h-6 w-6 text-blue-600" />
+                </div>
+                <CardTitle>Risk Reports</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-4">Track and manage risk reporting activities</p>
+              {stats?.totalReports !== undefined && (
+                <p className="text-sm text-gray-500 mb-4">
+                  {stats.totalReports} {stats.totalReports === 1 ? 'report' : 'reports'}
+                </p>
+              )}
+              <Link href="/risk-reports">
+                <Button variant="outline" className="w-full group">
+                  View Reports
+                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

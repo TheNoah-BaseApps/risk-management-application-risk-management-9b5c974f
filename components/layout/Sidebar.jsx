@@ -20,6 +20,7 @@ export default function Sidebar({ open, user }) {
     { name: 'Risks', href: '/risks', icon: AlertTriangle, permission: 'view_risks' },
     { name: 'Assignments', href: '/assignments', icon: Users, permission: 'view_assignments' },
     { name: 'Reports', href: '/reports', icon: FileText, permission: 'view_reports' },
+    { name: 'Risk Reports', href: '/risk-reports', icon: FileText, permission: 'view_reports' },
     { name: 'Profile', href: '/profile', icon: User, permission: 'view_profile' },
   ];
 

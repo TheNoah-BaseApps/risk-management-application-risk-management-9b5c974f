@@ -496,6 +496,265 @@
         }
       }
     },
+    "/api/risk-reports/{id}": {
+      "get": {
+        "summary": "Get a specific risk report",
+        "description": "Retrieve a single risk report by ID",
+        "tags": [
+          "Risk Reports"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Risk report ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Risk report details"
+          },
+          "404": {
+            "description": "Risk report not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a risk report",
+        "description": "Update an existing risk report",
+        "tags": [
+          "Risk Reports"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "report_id": {
+                    "type": "string"
+                  },
+                  "risk_id": {
+                    "type": "string"
+                  },
+                  "report_date": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "reporter_name": {
+                    "type": "string"
+                  },
+                  "report_summary": {
+                    "type": "string"
+                  },
+                  "report_type": {
+                    "type": "string"
+                  },
+                  "attached_documents": {
+                    "type": "string"
+                  },
+                  "distribution_list": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Risk report updated"
+          },
+          "404": {
+            "description": "Risk report not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a risk report",
+        "description": "Remove a risk report from the system",
+        "tags": [
+          "Risk Reports"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Risk report deleted"
+          },
+          "404": {
+            "description": "Risk report not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/risk-reports": {
+      "get": {
+        "summary": "Get all risk reports",
+        "description": "Retrieve a list of all risk reports with optional filtering",
+        "tags": [
+          "Risk Reports"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "risk_id",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by risk ID"
+          },
+          {
+            "in": "query",
+            "name": "report_type",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by report type"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Number of records to return"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "integer"
+            },
+            "description": "Number of records to skip"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of risk reports",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "total": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new risk report",
+        "description": "Create a new risk report record",
+        "tags": [
+          "Risk Reports"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "report_id",
+                  "risk_id",
+                  "report_date",
+                  "reporter_name",
+                  "report_summary",
+                  "report_type"
+                ],
+                "properties": {
+                  "report_id": {
+                    "type": "string"
+                  },
+                  "risk_id": {
+                    "type": "string"
+                  },
+                  "report_date": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "reporter_name": {
+                    "type": "string"
+                  },
+                  "report_summary": {
+                    "type": "string"
+                  },
+                  "report_type": {
+                    "type": "string"
+                  },
+                  "attached_documents": {
+                    "type": "string"
+                  },
+                  "distribution_list": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Risk report created successfully"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/risks/{id}": {
       "get": {
         "summary": "Get single risk details",
