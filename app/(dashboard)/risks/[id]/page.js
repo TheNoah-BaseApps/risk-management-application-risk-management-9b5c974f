@@ -14,6 +14,15 @@ import { ArrowLeft, Edit, Trash2, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDate } from '@/lib/utils';
 
+const normalizeRiskData = (risk) => ({
+  ...risk,
+  severity: risk.severity || undefined,
+  status: risk.status || undefined,
+  risk_category: risk.risk_category || undefined,
+  impact_level: risk.impact_level || undefined,
+  probability: risk.probability || undefined,
+});
+
 export default function RiskDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -39,7 +48,8 @@ export default function RiskDetailPage() {
         const riskData = await riskRes.json();
         const updatesData = updatesRes.ok ? await updatesRes.json() : { data: [] };
 
-        setRisk(riskData.data);
+        const normalized = normalizeRiskData(riskData.data);
+        setRisk(normalized);
         setUpdates(updatesData.data || []);
       } catch (err) {
         console.error('Fetch risk details error:', err);

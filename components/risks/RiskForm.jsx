@@ -14,9 +14,9 @@ export default function RiskForm({ onSuccess, risk = null }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
-    risk_category: risk?.risk_category || '',
+    risk_category: risk?.risk_category || undefined,
     risk_description: risk?.risk_description || '',
-    risk_source: risk?.risk_source || '',
+    risk_source: risk?.risk_source || undefined,
     risk_trigger: risk?.risk_trigger || '',
     status: risk?.status || 'Identified',
   });
@@ -44,12 +44,26 @@ export default function RiskForm({ onSuccess, risk = null }) {
 
   const statuses = ['Identified', 'Assigned', 'In Mitigation', 'Resolved', 'Closed'];
 
+  const normalizeSelectValue = (value) => (!value || value === "" ? undefined : value);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     // Validation
+    if (!formData.risk_category) {
+      setError('Risk category is required');
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.risk_source) {
+      setError('Risk source is required');
+      setLoading(false);
+      return;
+    }
+
     if (formData.risk_description.length < 20) {
       setError('Risk description must be at least 20 characters');
       setLoading(false);
@@ -90,7 +104,8 @@ export default function RiskForm({ onSuccess, risk = null }) {
   };
 
   const handleChange = (field, value) => {
-    setFormData({ ...formData, [field]: value });
+    const normalizedValue = normalizeSelectValue(value);
+    setFormData({ ...formData, [field]: normalizedValue });
   };
 
   return (
@@ -105,7 +120,7 @@ export default function RiskForm({ onSuccess, risk = null }) {
         <div className="space-y-2">
           <Label htmlFor="risk_category">Risk Category *</Label>
           <Select
-            value={formData.risk_category}
+            value={normalizeSelectValue(formData.risk_category)}
             onValueChange={(value) => handleChange('risk_category', value)}
             required
           >
@@ -125,7 +140,7 @@ export default function RiskForm({ onSuccess, risk = null }) {
         <div className="space-y-2">
           <Label htmlFor="risk_source">Risk Source *</Label>
           <Select
-            value={formData.risk_source}
+            value={normalizeSelectValue(formData.risk_source)}
             onValueChange={(value) => handleChange('risk_source', value)}
             required
           >
@@ -173,11 +188,11 @@ export default function RiskForm({ onSuccess, risk = null }) {
         <div className="space-y-2">
           <Label htmlFor="status">Status</Label>
           <Select
-            value={formData.status}
+            value={normalizeSelectValue(formData.status)}
             onValueChange={(value) => handleChange('status', value)}
           >
             <SelectTrigger>
-              <SelectValue />
+              <SelectValue placeholder="Select status" />
             </SelectTrigger>
             <SelectContent>
               {statuses.map((status) => (

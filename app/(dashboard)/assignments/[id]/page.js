@@ -14,6 +14,13 @@ import { ArrowLeft, Edit, Trash2, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDate, isOverdue } from '@/lib/utils';
 
+const normalizeAssignmentData = (assignment) => ({
+  ...assignment,
+  assignment_status: assignment.assignment_status || undefined,
+  priority_level: assignment.priority_level || undefined,
+  assigned_to: assignment.assigned_to || undefined,
+});
+
 export default function AssignmentDetailPage() {
   const router = useRouter();
   const params = useParams();
@@ -35,7 +42,8 @@ export default function AssignmentDetailPage() {
         }
 
         const data = await response.json();
-        setAssignment(data.data);
+        const normalized = normalizeAssignmentData(data.data);
+        setAssignment(normalized);
       } catch (err) {
         console.error('Fetch assignment details error:', err);
         setError(err.message);

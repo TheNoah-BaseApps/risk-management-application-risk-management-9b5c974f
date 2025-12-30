@@ -16,12 +16,15 @@ export default function AssignmentForm({ onSuccess, assignment = null, defaultRi
   const [error, setError] = useState('');
   const [risks, setRisks] = useState([]);
   const [loadingRisks, setLoadingRisks] = useState(true);
+
+  const normalizeSelectValue = (value) => (!value || value === "" ? undefined : value);
+
   const [formData, setFormData] = useState({
-    risk_id: assignment?.risk_id || defaultRiskId || '',
-    assigned_to: assignment?.assigned_to || '',
-    priority_level: assignment?.priority_level || '',
+    risk_id: normalizeSelectValue(assignment?.risk_id || defaultRiskId),
+    assigned_to: normalizeSelectValue(assignment?.assigned_to),
+    priority_level: normalizeSelectValue(assignment?.priority_level),
     deadline_date: assignment?.deadline_date || '',
-    assignment_status: assignment?.assignment_status || 'Pending',
+    assignment_status: normalizeSelectValue(assignment?.assignment_status) || 'Pending',
     notes: assignment?.notes || '',
   });
 
@@ -52,6 +55,31 @@ export default function AssignmentForm({ onSuccess, assignment = null, defaultRi
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    // Validation for required Select fields
+    if (!formData.risk_id) {
+      setError('Please select a risk');
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.assigned_to) {
+      setError('Please assign to a user');
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.priority_level) {
+      setError('Please select a priority level');
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.deadline_date) {
+      setError('Please select a deadline date');
+      setLoading(false);
+      return;
+    }
 
     // Validation
     const deadlineDate = new Date(formData.deadline_date);
@@ -91,7 +119,8 @@ export default function AssignmentForm({ onSuccess, assignment = null, defaultRi
   };
 
   const handleChange = (field, value) => {
-    setFormData({ ...formData, [field]: value });
+    const normalizedValue = normalizeSelectValue(value);
+    setFormData({ ...formData, [field]: normalizedValue });
   };
 
   return (
@@ -105,7 +134,7 @@ export default function AssignmentForm({ onSuccess, assignment = null, defaultRi
       <div className="space-y-2">
         <Label htmlFor="risk_id">Risk *</Label>
         <Select
-          value={formData.risk_id}
+          value={normalizeSelectValue(formData.risk_id)}
           onValueChange={(value) => handleChange('risk_id', value)}
           required
           disabled={loadingRisks || !!defaultRiskId}
@@ -127,7 +156,7 @@ export default function AssignmentForm({ onSuccess, assignment = null, defaultRi
         <div className="space-y-2">
           <Label>Assign To *</Label>
           <UserSelector
-            value={formData.assigned_to}
+            value={normalizeSelectValue(formData.assigned_to)}
             onChange={(value) => handleChange('assigned_to', value)}
             required
           />
@@ -136,7 +165,7 @@ export default function AssignmentForm({ onSuccess, assignment = null, defaultRi
         <div className="space-y-2">
           <Label htmlFor="priority_level">Priority Level *</Label>
           <Select
-            value={formData.priority_level}
+            value={normalizeSelectValue(formData.priority_level)}
             onValueChange={(value) => handleChange('priority_level', value)}
             required
           >
@@ -168,11 +197,11 @@ export default function AssignmentForm({ onSuccess, assignment = null, defaultRi
           <div className="space-y-2">
             <Label htmlFor="assignment_status">Status</Label>
             <Select
-              value={formData.assignment_status}
+              value={normalizeSelectValue(formData.assignment_status)}
               onValueChange={(value) => handleChange('assignment_status', value)}
             >
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
                 {statuses.map((status) => (
