@@ -784,6 +784,262 @@
         }
       }
     },
+    "/api/risk-evaluations/{id}": {
+      "get": {
+        "summary": "Get a risk evaluation by ID",
+        "description": "Retrieve a single risk evaluation record",
+        "tags": [
+          "Risk Evaluations"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Risk evaluation UUID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Risk evaluation retrieved successfully"
+          },
+          "404": {
+            "description": "Risk evaluation not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a risk evaluation",
+        "description": "Update an existing risk evaluation record",
+        "tags": [
+          "Risk Evaluations"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Risk evaluation UUID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "evaluation_id": {
+                    "type": "string"
+                  },
+                  "risk_id": {
+                    "type": "string"
+                  },
+                  "evaluation_date": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "evaluation_result": {
+                    "type": "string"
+                  },
+                  "evaluator_name": {
+                    "type": "string"
+                  },
+                  "evaluation_method": {
+                    "type": "string"
+                  },
+                  "effectiveness": {
+                    "type": "string"
+                  },
+                  "feedback_comment": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Risk evaluation updated successfully"
+          },
+          "404": {
+            "description": "Risk evaluation not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a risk evaluation",
+        "description": "Delete a risk evaluation record",
+        "tags": [
+          "Risk Evaluations"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Risk evaluation UUID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Risk evaluation deleted successfully"
+          },
+          "404": {
+            "description": "Risk evaluation not found"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/risk-evaluations": {
+      "get": {
+        "summary": "Get all risk evaluations",
+        "description": "Retrieve a list of all risk evaluation records with optional filtering",
+        "tags": [
+          "Risk Evaluations"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "risk_id",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by risk ID"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 50
+            },
+            "description": "Maximum number of records to return"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "description": "Number of records to skip"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of risk evaluations retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "total": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new risk evaluation",
+        "description": "Create a new risk evaluation record",
+        "tags": [
+          "Risk Evaluations"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "evaluation_id",
+                  "risk_id",
+                  "evaluation_date",
+                  "evaluation_result",
+                  "evaluator_name",
+                  "evaluation_method",
+                  "effectiveness"
+                ],
+                "properties": {
+                  "evaluation_id": {
+                    "type": "string"
+                  },
+                  "risk_id": {
+                    "type": "string"
+                  },
+                  "evaluation_date": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "evaluation_result": {
+                    "type": "string"
+                  },
+                  "evaluator_name": {
+                    "type": "string"
+                  },
+                  "evaluation_method": {
+                    "type": "string"
+                  },
+                  "effectiveness": {
+                    "type": "string"
+                  },
+                  "feedback_comment": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Risk evaluation created successfully"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
     "/api/risk-reports/{id}": {
       "get": {
         "summary": "Get a specific risk report",

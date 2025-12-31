@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import StatsWidget from '@/components/ui/StatsWidget';
 import AlertBanner from '@/components/ui/AlertBanner';
 import ActivityTimeline from '@/components/ui/ActivityTimeline';
-import { AlertTriangle, CheckCircle, CheckCircle2, Clock, TrendingUp, FileText, ArrowRight, Shield } from 'lucide-react';
+import { AlertTriangle, CheckCircle, CheckCircle2, Clock, TrendingUp, FileText, ArrowRight, Shield, ClipboardCheck } from 'lucide-react';
 import Link from 'next/link';
 
 export default function DashboardPage() {
@@ -184,6 +184,31 @@ export default function DashboardPage() {
               <Link href="/risk-resolutions">
                 <Button variant="outline" className="w-full group">
                   View Resolutions
+                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-amber-100 rounded-lg">
+                  <ClipboardCheck className="h-6 w-6 text-amber-600" />
+                </div>
+                <CardTitle>Risk Evaluations</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-4">Track evaluation results and effectiveness</p>
+              {stats?.totalEvaluations !== undefined && (
+                <p className="text-sm text-gray-500 mb-4">
+                  {stats.totalEvaluations} {stats.totalEvaluations === 1 ? 'evaluation' : 'evaluations'}
+                </p>
+              )}
+              <Link href="/risk-evaluations">
+                <Button variant="outline" className="w-full group">
+                  View Evaluations
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
