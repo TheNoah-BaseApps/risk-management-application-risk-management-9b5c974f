@@ -1827,6 +1827,271 @@
         }
       }
     },
+    "/api/risk-treatments/{id}": {
+      "get": {
+        "summary": "Get a risk treatment by ID",
+        "description": "Retrieve a single risk treatment record",
+        "tags": [
+          "Risk Treatments"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Risk treatment UUID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved risk treatment"
+          },
+          "404": {
+            "description": "Risk treatment not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a risk treatment",
+        "description": "Update an existing risk treatment record",
+        "tags": [
+          "Risk Treatments"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Risk treatment UUID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "treatment_id": {
+                    "type": "string"
+                  },
+                  "risk_id": {
+                    "type": "string"
+                  },
+                  "treatment_option": {
+                    "type": "string"
+                  },
+                  "responsible_person": {
+                    "type": "string"
+                  },
+                  "start_date": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "end_date": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "treatment_cost": {
+                    "type": "integer"
+                  },
+                  "approval_status": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Risk treatment updated successfully"
+          },
+          "404": {
+            "description": "Risk treatment not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a risk treatment",
+        "description": "Remove a risk treatment record",
+        "tags": [
+          "Risk Treatments"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Risk treatment UUID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Risk treatment deleted successfully"
+          },
+          "404": {
+            "description": "Risk treatment not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/risk-treatments": {
+      "get": {
+        "summary": "Get all risk treatments",
+        "description": "Retrieve a list of all risk treatment records with pagination support",
+        "tags": [
+          "Risk Treatments"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "Page number for pagination"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 50
+            },
+            "description": "Number of records per page"
+          },
+          {
+            "in": "query",
+            "name": "risk_id",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by risk ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successfully retrieved risk treatments",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "page": {
+                      "type": "integer"
+                    },
+                    "limit": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new risk treatment",
+        "description": "Add a new risk treatment record",
+        "tags": [
+          "Risk Treatments"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "treatment_id",
+                  "risk_id",
+                  "treatment_option",
+                  "responsible_person",
+                  "start_date",
+                  "end_date",
+                  "treatment_cost",
+                  "approval_status"
+                ],
+                "properties": {
+                  "treatment_id": {
+                    "type": "string"
+                  },
+                  "risk_id": {
+                    "type": "string"
+                  },
+                  "treatment_option": {
+                    "type": "string"
+                  },
+                  "responsible_person": {
+                    "type": "string"
+                  },
+                  "start_date": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "end_date": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "treatment_cost": {
+                    "type": "integer"
+                  },
+                  "approval_status": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Risk treatment created successfully"
+          },
+          "400": {
+            "description": "Invalid input data"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/risk-validations/{id}": {
       "get": {
         "summary": "Get a specific risk validation",

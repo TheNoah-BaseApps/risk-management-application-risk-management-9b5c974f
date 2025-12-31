@@ -239,6 +239,31 @@ export default function DashboardPage() {
               </Link>
             </CardContent>
           </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <FileText className="h-6 w-6 text-blue-600" />
+                </div>
+                <CardTitle>Risk Treatments</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-4">Manage treatment plans, costs, and approval status</p>
+              {stats?.totalTreatments !== undefined && (
+                <p className="text-sm text-gray-500 mb-4">
+                  {stats.totalTreatments} {stats.totalTreatments === 1 ? 'treatment' : 'treatments'}
+                </p>
+              )}
+              <Link href="/risk-treatments">
+                <Button variant="outline" className="w-full group">
+                  View Treatments
+                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
