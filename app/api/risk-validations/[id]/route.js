@@ -3,42 +3,45 @@ import { query } from '@/lib/database/aurora';
 
 /**
  * @swagger
- * /api/risk-resolutions/{id}:
+ * /api/risk-validations/{id}:
  *   get:
- *     summary: Get a specific risk resolution
- *     description: Retrieve details of a specific risk resolution by ID
+ *     summary: Get a specific risk validation
+ *     description: Retrieve details of a single risk validation by ID
  *     tags:
- *       - Risk Resolutions
+ *       - Risk Validations
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         description: Resolution UUID
+ *         description: Risk validation UUID
  *     responses:
  *       200:
- *         description: Successful response
+ *         description: Risk validation retrieved successfully
  *       404:
- *         description: Resolution not found
+ *         description: Risk validation not found
  *       500:
  *         description: Server error
  */
 export async function GET(request, { params }) {
   try {
     const { id } = params;
-    const result = await query('SELECT * FROM risk_resolutions WHERE id = $1', [id]);
+    const result = await query(
+      'SELECT * FROM risk_validations WHERE id = $1',
+      [id]
+    );
 
     if (result.rows.length === 0) {
       return NextResponse.json(
-        { success: false, error: 'Resolution not found' },
+        { success: false, error: 'Risk validation not found' },
         { status: 404 }
       );
     }
 
     return NextResponse.json({ success: true, data: result.rows[0] });
   } catch (error) {
-    console.error('Error fetching risk resolution:', error);
+    console.error('Error fetching risk validation:', error);
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }
@@ -48,19 +51,19 @@ export async function GET(request, { params }) {
 
 /**
  * @swagger
- * /api/risk-resolutions/{id}:
+ * /api/risk-validations/{id}:
  *   put:
- *     summary: Update a risk resolution
- *     description: Update an existing risk resolution record
+ *     summary: Update a risk validation
+ *     description: Update an existing risk validation record
  *     tags:
- *       - Risk Resolutions
+ *       - Risk Validations
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         description: Resolution UUID
+ *         description: Risk validation UUID
  *     requestBody:
  *       required: true
  *       content:
@@ -68,28 +71,32 @@ export async function GET(request, { params }) {
  *           schema:
  *             type: object
  *             properties:
- *               resolution_id:
+ *               validation_id:
  *                 type: string
- *               risk_id:
+ *               validated_by:
  *                 type: string
- *               resolution_summary:
- *                 type: string
- *               resolution_date:
+ *               validation_date:
  *                 type: string
  *                 format: date-time
- *               resolved_by:
+ *               validation_status:
  *                 type: string
- *               final_status:
+ *               validation_notes:
  *                 type: string
- *               resolution_evidence:
+ *               validation_method:
  *                 type: string
- *               follow_up_action:
+ *               validation_score:
+ *                 type: integer
+ *               validation_reviewer:
+ *                 type: string
+ *               validation_reference:
+ *                 type: string
+ *               validation_audit_log:
  *                 type: string
  *     responses:
  *       200:
- *         description: Resolution updated successfully
+ *         description: Risk validation updated successfully
  *       404:
- *         description: Resolution not found
+ *         description: Risk validation not found
  *       500:
  *         description: Server error
  */
@@ -98,43 +105,49 @@ export async function PUT(request, { params }) {
     const { id } = params;
     const body = await request.json();
 
-    const updates = [];
+    const updateFields = [];
     const values = [];
     let paramCount = 1;
 
-    Object.keys(body).forEach((key) => {
-      if (key !== 'id' && body[key] !== undefined) {
-        updates.push(`${key} = $${paramCount}`);
-        values.push(body[key]);
+    const allowedFields = [
+      'validation_id', 'validated_by', 'validation_date', 'validation_status',
+      'validation_notes', 'validation_method', 'validation_score', 'validation_reviewer',
+      'validation_reference', 'validation_audit_log'
+    ];
+
+    allowedFields.forEach(field => {
+      if (body[field] !== undefined) {
+        updateFields.push(`${field} = $${paramCount}`);
+        values.push(body[field]);
         paramCount++;
       }
     });
 
-    if (updates.length === 0) {
+    if (updateFields.length === 0) {
       return NextResponse.json(
         { success: false, error: 'No fields to update' },
         { status: 400 }
       );
     }
 
-    updates.push(`updated_at = NOW()`);
+    updateFields.push(`updated_at = CURRENT_TIMESTAMP`);
     values.push(id);
 
     const result = await query(
-      `UPDATE risk_resolutions SET ${updates.join(', ')} WHERE id = $${paramCount} RETURNING *`,
+      `UPDATE risk_validations SET ${updateFields.join(', ')} WHERE id = $${paramCount} RETURNING *`,
       values
     );
 
     if (result.rows.length === 0) {
       return NextResponse.json(
-        { success: false, error: 'Resolution not found' },
+        { success: false, error: 'Risk validation not found' },
         { status: 404 }
       );
     }
 
     return NextResponse.json({ success: true, data: result.rows[0] });
   } catch (error) {
-    console.error('Error updating risk resolution:', error);
+    console.error('Error updating risk validation:', error);
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }
@@ -144,42 +157,48 @@ export async function PUT(request, { params }) {
 
 /**
  * @swagger
- * /api/risk-resolutions/{id}:
+ * /api/risk-validations/{id}:
  *   delete:
- *     summary: Delete a risk resolution
- *     description: Remove a risk resolution record
+ *     summary: Delete a risk validation
+ *     description: Remove a risk validation record from the system
  *     tags:
- *       - Risk Resolutions
+ *       - Risk Validations
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         description: Resolution UUID
+ *         description: Risk validation UUID
  *     responses:
  *       200:
- *         description: Resolution deleted successfully
+ *         description: Risk validation deleted successfully
  *       404:
- *         description: Resolution not found
+ *         description: Risk validation not found
  *       500:
  *         description: Server error
  */
 export async function DELETE(request, { params }) {
   try {
     const { id } = params;
-    const result = await query('DELETE FROM risk_resolutions WHERE id = $1 RETURNING *', [id]);
+    const result = await query(
+      'DELETE FROM risk_validations WHERE id = $1 RETURNING *',
+      [id]
+    );
 
     if (result.rows.length === 0) {
       return NextResponse.json(
-        { success: false, error: 'Resolution not found' },
+        { success: false, error: 'Risk validation not found' },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ success: true, message: 'Resolution deleted successfully' });
+    return NextResponse.json({
+      success: true,
+      message: 'Risk validation deleted successfully'
+    });
   } catch (error) {
-    console.error('Error deleting risk resolution:', error);
+    console.error('Error deleting risk validation:', error);
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }

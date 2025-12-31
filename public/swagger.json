@@ -1566,8 +1566,8 @@
     },
     "/api/risk-resolutions/{id}": {
       "get": {
-        "summary": "Get a risk resolution by ID",
-        "description": "Retrieve a specific risk resolution record",
+        "summary": "Get a specific risk resolution",
+        "description": "Retrieve details of a specific risk resolution by ID",
         "tags": [
           "Risk Resolutions"
         ],
@@ -1579,15 +1579,15 @@
             "schema": {
               "type": "string"
             },
-            "description": "Risk resolution ID"
+            "description": "Resolution UUID"
           }
         ],
         "responses": {
           "200": {
-            "description": "Risk resolution details"
+            "description": "Successful response"
           },
           "404": {
-            "description": "Risk resolution not found"
+            "description": "Resolution not found"
           },
           "500": {
             "description": "Server error"
@@ -1608,7 +1608,7 @@
             "schema": {
               "type": "string"
             },
-            "description": "Risk resolution ID"
+            "description": "Resolution UUID"
           }
         ],
         "requestBody": {
@@ -1618,6 +1618,12 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "resolution_id": {
+                    "type": "string"
+                  },
+                  "risk_id": {
+                    "type": "string"
+                  },
                   "resolution_summary": {
                     "type": "string"
                   },
@@ -1644,10 +1650,10 @@
         },
         "responses": {
           "200": {
-            "description": "Risk resolution updated successfully"
+            "description": "Resolution updated successfully"
           },
           "404": {
-            "description": "Risk resolution not found"
+            "description": "Resolution not found"
           },
           "500": {
             "description": "Server error"
@@ -1656,7 +1662,7 @@
       },
       "delete": {
         "summary": "Delete a risk resolution",
-        "description": "Delete a risk resolution record",
+        "description": "Remove a risk resolution record",
         "tags": [
           "Risk Resolutions"
         ],
@@ -1668,15 +1674,15 @@
             "schema": {
               "type": "string"
             },
-            "description": "Risk resolution ID"
+            "description": "Resolution UUID"
           }
         ],
         "responses": {
           "200": {
-            "description": "Risk resolution deleted successfully"
+            "description": "Resolution deleted successfully"
           },
           "404": {
-            "description": "Risk resolution not found"
+            "description": "Resolution not found"
           },
           "500": {
             "description": "Server error"
@@ -1687,7 +1693,7 @@
     "/api/risk-resolutions": {
       "get": {
         "summary": "Get all risk resolutions",
-        "description": "Retrieve all risk resolution records with pagination support",
+        "description": "Retrieve a list of all risk resolution records",
         "tags": [
           "Risk Resolutions"
         ],
@@ -1697,7 +1703,7 @@
             "name": "limit",
             "schema": {
               "type": "integer",
-              "default": 50
+              "default": 100
             },
             "description": "Maximum number of records to return"
           },
@@ -1717,11 +1723,19 @@
               "type": "string"
             },
             "description": "Filter by risk ID"
+          },
+          {
+            "in": "query",
+            "name": "final_status",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by final status"
           }
         ],
         "responses": {
           "200": {
-            "description": "List of risk resolutions",
+            "description": "Successful response",
             "content": {
               "application/json": {
                 "schema": {
@@ -1751,7 +1765,7 @@
       },
       "post": {
         "summary": "Create a new risk resolution",
-        "description": "Create a new risk resolution record",
+        "description": "Add a new risk resolution record",
         "tags": [
           "Risk Resolutions"
         ],
@@ -1802,10 +1816,294 @@
         },
         "responses": {
           "201": {
-            "description": "Risk resolution created successfully"
+            "description": "Resolution created successfully"
           },
           "400": {
             "description": "Invalid input"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/risk-validations/{id}": {
+      "get": {
+        "summary": "Get a specific risk validation",
+        "description": "Retrieve details of a single risk validation by ID",
+        "tags": [
+          "Risk Validations"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Risk validation UUID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Risk validation retrieved successfully"
+          },
+          "404": {
+            "description": "Risk validation not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a risk validation",
+        "description": "Update an existing risk validation record",
+        "tags": [
+          "Risk Validations"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Risk validation UUID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "validation_id": {
+                    "type": "string"
+                  },
+                  "validated_by": {
+                    "type": "string"
+                  },
+                  "validation_date": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "validation_status": {
+                    "type": "string"
+                  },
+                  "validation_notes": {
+                    "type": "string"
+                  },
+                  "validation_method": {
+                    "type": "string"
+                  },
+                  "validation_score": {
+                    "type": "integer"
+                  },
+                  "validation_reviewer": {
+                    "type": "string"
+                  },
+                  "validation_reference": {
+                    "type": "string"
+                  },
+                  "validation_audit_log": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Risk validation updated successfully"
+          },
+          "404": {
+            "description": "Risk validation not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a risk validation",
+        "description": "Remove a risk validation record from the system",
+        "tags": [
+          "Risk Validations"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Risk validation UUID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Risk validation deleted successfully"
+          },
+          "404": {
+            "description": "Risk validation not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/risk-validations": {
+      "get": {
+        "summary": "Get all risk validations",
+        "description": "Retrieve a list of all risk validation records with pagination support",
+        "tags": [
+          "Risk Validations"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "integer",
+              "default": 1
+            },
+            "description": "Page number for pagination"
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 50
+            },
+            "description": "Number of records per page"
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by validation status"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of risk validations retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "page": {
+                      "type": "integer"
+                    },
+                    "limit": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new risk validation",
+        "description": "Add a new risk validation record to the system",
+        "tags": [
+          "Risk Validations"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "validation_id",
+                  "validated_by",
+                  "validation_date",
+                  "validation_status",
+                  "validation_method",
+                  "validation_score",
+                  "validation_reviewer"
+                ],
+                "properties": {
+                  "validation_id": {
+                    "type": "string",
+                    "description": "Unique validation identifier"
+                  },
+                  "validated_by": {
+                    "type": "string",
+                    "description": "Name of person who performed validation"
+                  },
+                  "validation_date": {
+                    "type": "string",
+                    "format": "date-time",
+                    "description": "Date of validation"
+                  },
+                  "validation_status": {
+                    "type": "string",
+                    "description": "Validation status (Approved, Rejected, Pending Review)"
+                  },
+                  "validation_notes": {
+                    "type": "string",
+                    "description": "Additional validation notes"
+                  },
+                  "validation_method": {
+                    "type": "string",
+                    "description": "Method used for validation"
+                  },
+                  "validation_score": {
+                    "type": "integer",
+                    "description": "Validation score (0-100)"
+                  },
+                  "validation_reviewer": {
+                    "type": "string",
+                    "description": "Name of validation reviewer"
+                  },
+                  "validation_reference": {
+                    "type": "string",
+                    "description": "Reference documentation or ID"
+                  },
+                  "validation_audit_log": {
+                    "type": "string",
+                    "description": "Audit log entries"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Risk validation created successfully"
+          },
+          "400": {
+            "description": "Invalid input data"
           },
           "500": {
             "description": "Server error"

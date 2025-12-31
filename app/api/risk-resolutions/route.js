@@ -6,14 +6,15 @@ import { query } from '@/lib/database/aurora';
  * /api/risk-resolutions:
  *   get:
  *     summary: Get all risk resolutions
- *     description: Retrieve all risk resolution records with pagination support
- *     tags: [Risk Resolutions]
+ *     description: Retrieve a list of all risk resolution records
+ *     tags:
+ *       - Risk Resolutions
  *     parameters:
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
- *           default: 50
+ *           default: 100
  *         description: Maximum number of records to return
  *       - in: query
  *         name: offset
@@ -26,9 +27,14 @@ import { query } from '@/lib/database/aurora';
  *         schema:
  *           type: string
  *         description: Filter by risk ID
+ *       - in: query
+ *         name: final_status
+ *         schema:
+ *           type: string
+ *         description: Filter by final status
  *     responses:
  *       200:
- *         description: List of risk resolutions
+ *         description: Successful response
  *         content:
  *           application/json:
  *             schema:
@@ -48,33 +54,33 @@ import { query } from '@/lib/database/aurora';
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get('limit') || '50');
+    const limit = parseInt(searchParams.get('limit') || '100');
     const offset = parseInt(searchParams.get('offset') || '0');
     const riskId = searchParams.get('risk_id');
+    const finalStatus = searchParams.get('final_status');
 
-    let queryText = 'SELECT * FROM risk_resolutions';
-    let params = [];
-    let paramIndex = 1;
+    let queryText = 'SELECT * FROM risk_resolutions WHERE 1=1';
+    const params = [];
+    let paramCount = 1;
 
     if (riskId) {
-      queryText += ` WHERE risk_id = $${paramIndex}`;
+      queryText += ` AND risk_id = $${paramCount}`;
       params.push(riskId);
-      paramIndex++;
+      paramCount++;
     }
 
-    queryText += ` ORDER BY resolution_date DESC LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+    if (finalStatus) {
+      queryText += ` AND final_status = $${paramCount}`;
+      params.push(finalStatus);
+      paramCount++;
+    }
+
+    queryText += ` ORDER BY resolution_date DESC LIMIT $${paramCount} OFFSET $${paramCount + 1}`;
     params.push(limit, offset);
 
     const result = await query(queryText, params);
-
-    // Get total count
-    let countQuery = 'SELECT COUNT(*) FROM risk_resolutions';
-    let countParams = [];
-    if (riskId) {
-      countQuery += ' WHERE risk_id = $1';
-      countParams.push(riskId);
-    }
-    const countResult = await query(countQuery, countParams);
+    
+    const countResult = await query('SELECT COUNT(*) FROM risk_resolutions');
     const total = parseInt(countResult.rows[0].count);
 
     return NextResponse.json({
@@ -98,8 +104,9 @@ export async function GET(request) {
  * /api/risk-resolutions:
  *   post:
  *     summary: Create a new risk resolution
- *     description: Create a new risk resolution record
- *     tags: [Risk Resolutions]
+ *     description: Add a new risk resolution record
+ *     tags:
+ *       - Risk Resolutions
  *     requestBody:
  *       required: true
  *       content:
@@ -133,7 +140,7 @@ export async function GET(request) {
  *                 type: string
  *     responses:
  *       201:
- *         description: Risk resolution created successfully
+ *         description: Resolution created successfully
  *       400:
  *         description: Invalid input
  *       500:
@@ -163,10 +170,10 @@ export async function POST(request) {
 
     const result = await query(
       `INSERT INTO risk_resolutions 
-       (resolution_id, risk_id, resolution_summary, resolution_date, resolved_by, final_status, resolution_evidence, follow_up_action, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
+       (resolution_id, risk_id, resolution_summary, resolution_date, resolved_by, final_status, resolution_evidence, follow_up_action)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING *`,
-      [resolution_id, risk_id, resolution_summary, resolution_date, resolved_by, final_status, resolution_evidence || null, follow_up_action || null]
+      [resolution_id, risk_id, resolution_summary, resolution_date, resolved_by, final_status, resolution_evidence, follow_up_action]
     );
 
     return NextResponse.json(

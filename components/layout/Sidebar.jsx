@@ -27,6 +27,7 @@ export default function Sidebar({ open, user }) {
     { name: 'Mitigation Plans', href: '/mitigation-plans', icon: Shield, permission: 'view_risks' },
     { name: 'Risk Resolutions', href: '/risk-resolutions', icon: CheckCircle2, permission: 'view_risks' },
     { name: 'Risk Evaluations', href: '/risk-evaluations', icon: ClipboardCheck, permission: 'view_risks' },
+    { name: 'Risk Validations', href: '/risk-validations', icon: CheckCircle2, permission: 'view_risks' },
     { name: 'Profile', href: '/profile', icon: User, permission: 'view_profile' },
   ];
 

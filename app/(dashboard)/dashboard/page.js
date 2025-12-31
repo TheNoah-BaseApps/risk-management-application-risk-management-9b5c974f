@@ -168,14 +168,14 @@ export default function DashboardPage() {
           <Card className="hover:shadow-lg transition-shadow">
             <CardHeader>
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <CheckCircle2 className="h-6 w-6 text-purple-600" />
+                <div className="p-2 bg-green-100 rounded-lg">
+                  <CheckCircle2 className="h-6 w-6 text-green-600" />
                 </div>
                 <CardTitle>Risk Resolutions</CardTitle>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600 mb-4">Track and manage resolved risks and follow-up actions</p>
+              <p className="text-gray-600 mb-4">Track and manage risk resolution processes</p>
               {stats?.totalResolutions !== undefined && (
                 <p className="text-sm text-gray-500 mb-4">
                   {stats.totalResolutions} {stats.totalResolutions === 1 ? 'resolution' : 'resolutions'}
@@ -209,6 +209,31 @@ export default function DashboardPage() {
               <Link href="/risk-evaluations">
                 <Button variant="outline" className="w-full group">
                   View Evaluations
+                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-purple-100 rounded-lg">
+                  <CheckCircle2 className="h-6 w-6 text-purple-600" />
+                </div>
+                <CardTitle>Risk Validations</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-4">Manage and track risk validation activities and approvals</p>
+              {stats?.totalValidations !== undefined && (
+                <p className="text-sm text-gray-500 mb-4">
+                  {stats.totalValidations} {stats.totalValidations === 1 ? 'validation' : 'validations'}
+                </p>
+              )}
+              <Link href="/risk-validations">
+                <Button variant="outline" className="w-full group">
+                  View Validations
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
