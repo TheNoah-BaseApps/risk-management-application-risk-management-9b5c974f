@@ -264,6 +264,31 @@ export default function DashboardPage() {
               </Link>
             </CardContent>
           </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-indigo-100 rounded-lg">
+                  <Shield className="h-6 w-6 text-indigo-600" />
+                </div>
+                <CardTitle>Risk Responses</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-4">Manage risk response plans and mitigation strategies</p>
+              {stats?.totalResponses !== undefined && (
+                <p className="text-sm text-gray-500 mb-4">
+                  {stats.totalResponses} {stats.totalResponses === 1 ? 'response' : 'responses'}
+                </p>
+              )}
+              <Link href="/risk-responses">
+                <Button variant="outline" className="w-full group">
+                  View Responses
+                  <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
         </div>
       </div>
 

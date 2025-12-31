@@ -1827,6 +1827,262 @@
         }
       }
     },
+    "/api/risk-responses/{id}": {
+      "get": {
+        "summary": "Get a risk response by ID",
+        "description": "Retrieve a single risk response record by ID",
+        "tags": [
+          "Risk Responses"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Risk response ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Risk response retrieved successfully"
+          },
+          "404": {
+            "description": "Risk response not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a risk response",
+        "description": "Update an existing risk response record",
+        "tags": [
+          "Risk Responses"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Risk response ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "response_id": {
+                    "type": "string"
+                  },
+                  "risk_id": {
+                    "type": "string"
+                  },
+                  "response_strategy": {
+                    "type": "string"
+                  },
+                  "response_details": {
+                    "type": "string"
+                  },
+                  "response_date": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "responder_name": {
+                    "type": "string"
+                  },
+                  "escalation_level": {
+                    "type": "string"
+                  },
+                  "contingency_plan": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Risk response updated successfully"
+          },
+          "404": {
+            "description": "Risk response not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a risk response",
+        "description": "Delete a risk response record by ID",
+        "tags": [
+          "Risk Responses"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Risk response ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Risk response deleted successfully"
+          },
+          "404": {
+            "description": "Risk response not found"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/risk-responses": {
+      "get": {
+        "summary": "Get all risk responses",
+        "description": "Retrieve a list of all risk response records with pagination",
+        "tags": [
+          "Risk Responses"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "type": "integer",
+              "default": 100
+            },
+            "description": "Maximum number of records to return"
+          },
+          {
+            "in": "query",
+            "name": "offset",
+            "schema": {
+              "type": "integer",
+              "default": 0
+            },
+            "description": "Number of records to skip"
+          },
+          {
+            "in": "query",
+            "name": "risk_id",
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by risk ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of risk responses retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    },
+                    "total": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a new risk response",
+        "description": "Create a new risk response record",
+        "tags": [
+          "Risk Responses"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "response_id",
+                  "risk_id",
+                  "response_strategy",
+                  "response_details",
+                  "response_date",
+                  "responder_name",
+                  "escalation_level"
+                ],
+                "properties": {
+                  "response_id": {
+                    "type": "string"
+                  },
+                  "risk_id": {
+                    "type": "string"
+                  },
+                  "response_strategy": {
+                    "type": "string"
+                  },
+                  "response_details": {
+                    "type": "string"
+                  },
+                  "response_date": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "responder_name": {
+                    "type": "string"
+                  },
+                  "escalation_level": {
+                    "type": "string"
+                  },
+                  "contingency_plan": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Risk response created successfully"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/risk-treatments/{id}": {
       "get": {
         "summary": "Get a risk treatment by ID",
