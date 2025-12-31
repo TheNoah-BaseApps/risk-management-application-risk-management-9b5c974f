@@ -275,7 +275,7 @@ export default function DashboardPage() {
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600 mb-4">Manage risk response plans and mitigation strategies</p>
+              <p className="text-gray-600 mb-4">Manage risk response strategies and mitigation actions</p>
               {stats?.totalResponses !== undefined && (
                 <p className="text-sm text-gray-500 mb-4">
                   {stats.totalResponses} {stats.totalResponses === 1 ? 'response' : 'responses'}
